@@ -30,7 +30,7 @@ import (
 	"golang.org/x/crypto/cryptobyte"
 	cbasn1 "golang.org/x/crypto/cryptobyte/asn1"
 
-	"github.com/tjfoc/gmsm/sm3"
+	"github.com/gebaolei/gmsm/sm3"
 )
 
 var (

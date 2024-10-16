@@ -20,8 +20,8 @@ import (
 	"encoding/hex"
 	"encoding/pem"
 	"errors"
-	"github.com/tjfoc/gmsm/sm2"
-x 	"github.com/tjfoc/gmsm/x509"
+	"github.com/gebaolei/gmsm/sm2"
+x 	"github.com/gebaolei/gmsm/x509"
 	"io/ioutil"
 )
 

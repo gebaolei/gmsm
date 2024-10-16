@@ -12,7 +12,7 @@ import (
 	"crypto/x509/pkix"
 	"encoding/asn1"
 	"errors"
-	"github.com/tjfoc/gmsm/sm2"
+	"github.com/gebaolei/gmsm/sm2"
 	"fmt"
 	"math/big"
 )
