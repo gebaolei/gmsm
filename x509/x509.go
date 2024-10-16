@@ -424,36 +424,61 @@ const (
 //    us(840) ansi-X9-62(10045) signatures(4) ecdsa-with-SHA2(3) 4 }
 
 var (
-	oidSignatureMD2WithRSA      = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 2}
-	oidSignatureMD5WithRSA      = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 4}
-	oidSignatureSHA1WithRSA     = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 5}
-	oidSignatureSHA256WithRSA   = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 11}
-	oidSignatureSHA384WithRSA   = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 12}
-	oidSignatureSHA512WithRSA   = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 13}
-	oidSignatureRSAPSS          = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 10}
-	oidSignatureDSAWithSHA1     = asn1.ObjectIdentifier{1, 2, 840, 10040, 4, 3}
-	oidSignatureDSAWithSHA256   = asn1.ObjectIdentifier{2, 16, 840, 1, 101, 3, 4, 3, 2}
-	oidSignatureECDSAWithSHA1   = asn1.ObjectIdentifier{1, 2, 840, 10045, 4, 1}
-	oidSignatureECDSAWithSHA256 = asn1.ObjectIdentifier{1, 2, 840, 10045, 4, 3, 2}
-	oidSignatureECDSAWithSHA384 = asn1.ObjectIdentifier{1, 2, 840, 10045, 4, 3, 3}
-	oidSignatureECDSAWithSHA512 = asn1.ObjectIdentifier{1, 2, 840, 10045, 4, 3, 4}
-	oidSignatureSM2WithSM3      = asn1.ObjectIdentifier{1, 2, 156, 10197, 1, 501}
-	oidSignatureSM2WithSHA1     = asn1.ObjectIdentifier{1, 2, 156, 10197, 1, 502}
-	oidSignatureSM2WithSHA256   = asn1.ObjectIdentifier{1, 2, 156, 10197, 1, 503}
+	// Signature Algorithms
+	OIDSignatureRSA             = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 1}
+	OIDSignatureMD2WithRSA      = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 2}
+	OIDSignatureMD5WithRSA      = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 4}
+	OIDSignatureSHA1WithRSA     = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 5}
+	OIDSignatureSHA256WithRSA   = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 11}
+	OIDSignatureSHA384WithRSA   = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 12}
+	OIDSignatureSHA512WithRSA   = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 13}
+	OIDSignatureRSAPSS          = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 10}
+	OIDSignatureDSAWithSHA1     = asn1.ObjectIdentifier{1, 2, 840, 10040, 4, 3}
+	OIDSignatureDSAWithSHA256   = asn1.ObjectIdentifier{2, 16, 840, 1, 101, 3, 4, 3, 2}
+	OIDSignatureECDSAWithSHA1   = asn1.ObjectIdentifier{1, 2, 840, 10045, 4, 1}
+	OIDSignatureECDSAWithSHA256 = asn1.ObjectIdentifier{1, 2, 840, 10045, 4, 3, 2}
+	OIDSignatureECDSAWithSHA384 = asn1.ObjectIdentifier{1, 2, 840, 10045, 4, 3, 3}
+	OIDSignatureECDSAWithSHA512 = asn1.ObjectIdentifier{1, 2, 840, 10045, 4, 3, 4}
+
+	OIDEncryptionAlgorithmECDSAP256  = asn1.ObjectIdentifier{1, 2, 840, 10045, 3, 1, 7}
+	OIDEncryptionAlgorithmECDSAP384  = asn1.ObjectIdentifier{1, 3, 132, 0, 34}
+	OIDEncryptionAlgorithmECDSAP521  = asn1.ObjectIdentifier{1, 3, 132, 0, 35}
+	OIDEncryptionAlgorithmEDDSA25519 = asn1.ObjectIdentifier{1, 3, 101, 112}
+
+	OIDSignatureSM2WithSM3    = asn1.ObjectIdentifier{1, 2, 156, 10197, 1, 501}
+	OIDSignatureSM2WithSHA1   = asn1.ObjectIdentifier{1, 2, 156, 10197, 1, 502}
+	OIDSignatureSM2WithSHA256 = asn1.ObjectIdentifier{1, 2, 156, 10197, 1, 503}
+	OIDSignatureDSASM2        = asn1.ObjectIdentifier{1, 2, 156, 10197, 1, 301, 1}
 	//	oidSignatureSM3WithRSA      = asn1.ObjectIdentifier{1, 2, 156, 10197, 1, 504}
 
-	oidSM3     = asn1.ObjectIdentifier{1, 2, 156, 10197, 1, 401, 1}
-	oidSHA256  = asn1.ObjectIdentifier{2, 16, 840, 1, 101, 3, 4, 2, 1}
-	oidSHA384  = asn1.ObjectIdentifier{2, 16, 840, 1, 101, 3, 4, 2, 2}
-	oidSHA512  = asn1.ObjectIdentifier{2, 16, 840, 1, 101, 3, 4, 2, 3}
-	oidHashSM3 = asn1.ObjectIdentifier{1, 2, 156, 10197, 1, 401}
+	// Encryption Algorithms
+	OIDEncryptionAlgorithmDESCBC     = asn1.ObjectIdentifier{1, 3, 14, 3, 2, 7}
+	OIDEncryptionAlgorithmDESEDE3CBC = asn1.ObjectIdentifier{1, 2, 840, 113549, 3, 7}
+	OIDEncryptionAlgorithmAES256CBC  = asn1.ObjectIdentifier{2, 16, 840, 1, 101, 3, 4, 1, 42}
+	OIDEncryptionAlgorithmAES128GCM  = asn1.ObjectIdentifier{2, 16, 840, 1, 101, 3, 4, 1, 6}
+	OIDEncryptionAlgorithmAES128CBC  = asn1.ObjectIdentifier{2, 16, 840, 1, 101, 3, 4, 1, 2}
+	OIDEncryptionAlgorithmAES256GCM  = asn1.ObjectIdentifier{2, 16, 840, 1, 101, 3, 4, 1, 46}
 
-	oidMGF1 = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 8}
+	// Digest Algorithms
+	OIDDigestAlgorithmSHA1          = asn1.ObjectIdentifier{1, 3, 14, 3, 2, 26}
+	OIDDigestAlgorithmSHA256        = asn1.ObjectIdentifier{2, 16, 840, 1, 101, 3, 4, 2, 1}
+	OIDDigestAlgorithmSHA384        = asn1.ObjectIdentifier{2, 16, 840, 1, 101, 3, 4, 2, 2}
+	OIDDigestAlgorithmSHA512        = asn1.ObjectIdentifier{2, 16, 840, 1, 101, 3, 4, 2, 3}
+	OIDDigestAlgorithmDSA           = asn1.ObjectIdentifier{1, 2, 840, 10040, 4, 1}
+	OIDDigestAlgorithmDSASHA1       = asn1.ObjectIdentifier{1, 2, 840, 10040, 4, 3}
+	OIDDigestAlgorithmECDSASHA1     = asn1.ObjectIdentifier{1, 2, 840, 10045, 4, 1}
+	OIDDigestAlgorithmECDSASHA256   = asn1.ObjectIdentifier{1, 2, 840, 10045, 4, 3, 2}
+	OIDDigestAlgorithmECDSASHA384   = asn1.ObjectIdentifier{1, 2, 840, 10045, 4, 3, 3}
+	OIDDigestAlgorithmECDSASHA512   = asn1.ObjectIdentifier{1, 2, 840, 10045, 4, 3, 4}
+	OIDDigestAlgorithmSM3           = asn1.ObjectIdentifier{1, 2, 156, 10197, 1, 401}
+	OIDDigestAlgorithmSM3WithoutKey = asn1.ObjectIdentifier{1, 2, 156, 10197, 1, 401, 1}
+
+	OIDMGF1 = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 8}
 
 	// oidISOSignatureSHA1WithRSA means the same as oidSignatureSHA1WithRSA
 	// but it's specified by ISO. Microsoft's makecert.exe has been known
 	// to produce certificates with this OID.
-	oidISOSignatureSHA1WithRSA = asn1.ObjectIdentifier{1, 3, 14, 3, 2, 29}
+	OIDISOSignatureSHA1WithRSA = asn1.ObjectIdentifier{1, 3, 14, 3, 2, 29}
 )
 
 var signatureAlgorithmDetails = []struct {
@@ -462,25 +487,25 @@ var signatureAlgorithmDetails = []struct {
 	pubKeyAlgo PublicKeyAlgorithm
 	hash       Hash
 }{
-	{MD2WithRSA, oidSignatureMD2WithRSA, RSA, Hash(0) /* no value for MD2 */},
-	{MD5WithRSA, oidSignatureMD5WithRSA, RSA, MD5},
-	{SHA1WithRSA, oidSignatureSHA1WithRSA, RSA, SHA1},
-	{SHA1WithRSA, oidISOSignatureSHA1WithRSA, RSA, SHA1},
-	{SHA256WithRSA, oidSignatureSHA256WithRSA, RSA, SHA256},
-	{SHA384WithRSA, oidSignatureSHA384WithRSA, RSA, SHA384},
-	{SHA512WithRSA, oidSignatureSHA512WithRSA, RSA, SHA512},
-	{SHA256WithRSAPSS, oidSignatureRSAPSS, RSA, SHA256},
-	{SHA384WithRSAPSS, oidSignatureRSAPSS, RSA, SHA384},
-	{SHA512WithRSAPSS, oidSignatureRSAPSS, RSA, SHA512},
-	{DSAWithSHA1, oidSignatureDSAWithSHA1, DSA, SHA1},
-	{DSAWithSHA256, oidSignatureDSAWithSHA256, DSA, SHA256},
-	{ECDSAWithSHA1, oidSignatureECDSAWithSHA1, ECDSA, SHA1},
-	{ECDSAWithSHA256, oidSignatureECDSAWithSHA256, ECDSA, SHA256},
-	{ECDSAWithSHA384, oidSignatureECDSAWithSHA384, ECDSA, SHA384},
-	{ECDSAWithSHA512, oidSignatureECDSAWithSHA512, ECDSA, SHA512},
-	{SM2WithSM3, oidSignatureSM2WithSM3, ECDSA, SM3},
-	{SM2WithSHA1, oidSignatureSM2WithSHA1, ECDSA, SHA1},
-	{SM2WithSHA256, oidSignatureSM2WithSHA256, ECDSA, SHA256},
+	{MD2WithRSA, OIDSignatureMD2WithRSA, RSA, Hash(0) /* no value for MD2 */},
+	{MD5WithRSA, OIDSignatureMD5WithRSA, RSA, MD5},
+	{SHA1WithRSA, OIDSignatureSHA1WithRSA, RSA, SHA1},
+	{SHA1WithRSA, OIDISOSignatureSHA1WithRSA, RSA, SHA1},
+	{SHA256WithRSA, OIDSignatureSHA256WithRSA, RSA, SHA256},
+	{SHA384WithRSA, OIDSignatureSHA384WithRSA, RSA, SHA384},
+	{SHA512WithRSA, OIDSignatureSHA512WithRSA, RSA, SHA512},
+	{SHA256WithRSAPSS, OIDSignatureRSAPSS, RSA, SHA256},
+	{SHA384WithRSAPSS, OIDSignatureRSAPSS, RSA, SHA384},
+	{SHA512WithRSAPSS, OIDSignatureRSAPSS, RSA, SHA512},
+	{DSAWithSHA1, OIDSignatureDSAWithSHA1, DSA, SHA1},
+	{DSAWithSHA256, OIDSignatureDSAWithSHA256, DSA, SHA256},
+	{ECDSAWithSHA1, OIDSignatureECDSAWithSHA1, ECDSA, SHA1},
+	{ECDSAWithSHA256, OIDSignatureECDSAWithSHA256, ECDSA, SHA256},
+	{ECDSAWithSHA384, OIDSignatureECDSAWithSHA384, ECDSA, SHA384},
+	{ECDSAWithSHA512, OIDSignatureECDSAWithSHA512, ECDSA, SHA512},
+	{SM2WithSM3, OIDSignatureSM2WithSM3, ECDSA, SM3},
+	{SM2WithSHA1, OIDSignatureSM2WithSHA1, ECDSA, SHA1},
+	{SM2WithSHA256, OIDSignatureSM2WithSHA256, ECDSA, SHA256},
 	//	{SM3WithRSA, oidSignatureSM3WithRSA, RSA, SM3},
 }
 
@@ -503,11 +528,11 @@ func rsaPSSParameters(hashFunc Hash) asn1.RawValue {
 
 	switch hashFunc {
 	case SHA256:
-		hashOID = oidSHA256
+		hashOID = OIDDigestAlgorithmSHA256
 	case SHA384:
-		hashOID = oidSHA384
+		hashOID = OIDDigestAlgorithmECDSASHA384
 	case SHA512:
-		hashOID = oidSHA512
+		hashOID = OIDDigestAlgorithmECDSASHA512
 	}
 
 	params := pssParameters{
@@ -518,7 +543,7 @@ func rsaPSSParameters(hashFunc Hash) asn1.RawValue {
 			},
 		},
 		MGF: pkix.AlgorithmIdentifier{
-			Algorithm: oidMGF1,
+			Algorithm: OIDMGF1,
 		},
 		SaltLength:   hashFunc.Size(),
 		TrailerField: 1,
@@ -546,7 +571,7 @@ func rsaPSSParameters(hashFunc Hash) asn1.RawValue {
 }
 
 func getSignatureAlgorithmFromAI(ai pkix.AlgorithmIdentifier) SignatureAlgorithm {
-	if !ai.Algorithm.Equal(oidSignatureRSAPSS) {
+	if !ai.Algorithm.Equal(OIDSignatureRSAPSS) {
 		for _, details := range signatureAlgorithmDetails {
 			if ai.Algorithm.Equal(details.oid) {
 				return details.algo
@@ -577,7 +602,7 @@ func getSignatureAlgorithmFromAI(ai pkix.AlgorithmIdentifier) SignatureAlgorithm
 	// field has the default value.
 	asn1NULL := []byte{0x05, 0x00}
 	if !bytes.Equal(params.Hash.Parameters.FullBytes, asn1NULL) ||
-		!params.MGF.Algorithm.Equal(oidMGF1) ||
+		!params.MGF.Algorithm.Equal(OIDMGF1) ||
 		!mgf1HashFunc.Algorithm.Equal(params.Hash.Algorithm) ||
 		!bytes.Equal(mgf1HashFunc.Parameters.FullBytes, asn1NULL) ||
 		params.TrailerField != 1 {
@@ -585,11 +610,11 @@ func getSignatureAlgorithmFromAI(ai pkix.AlgorithmIdentifier) SignatureAlgorithm
 	}
 
 	switch {
-	case params.Hash.Algorithm.Equal(oidSHA256) && params.SaltLength == 32:
+	case params.Hash.Algorithm.Equal(OIDDigestAlgorithmSHA256) && params.SaltLength == 32:
 		return SHA256WithRSAPSS
-	case params.Hash.Algorithm.Equal(oidSHA384) && params.SaltLength == 48:
+	case params.Hash.Algorithm.Equal(OIDDigestAlgorithmSHA384) && params.SaltLength == 48:
 		return SHA384WithRSAPSS
-	case params.Hash.Algorithm.Equal(oidSHA512) && params.SaltLength == 64:
+	case params.Hash.Algorithm.Equal(OIDDigestAlgorithmSHA512) && params.SaltLength == 64:
 		return SHA512WithRSAPSS
 	}
 
@@ -1822,7 +1847,7 @@ func signingParamsForPublicKey(pub interface{}, requestedSigAlgo SignatureAlgori
 	case *rsa.PublicKey:
 		pubType = RSA
 		hashFunc = SHA256
-		sigAlgo.Algorithm = oidSignatureSHA256WithRSA
+		sigAlgo.Algorithm = OIDSignatureSHA256WithRSA
 		sigAlgo.Parameters = asn1.RawValue{
 			Tag: 5,
 		}
@@ -1832,13 +1857,13 @@ func signingParamsForPublicKey(pub interface{}, requestedSigAlgo SignatureAlgori
 		switch pub.Curve {
 		case elliptic.P224(), elliptic.P256():
 			hashFunc = SHA256
-			sigAlgo.Algorithm = oidSignatureECDSAWithSHA256
+			sigAlgo.Algorithm = OIDSignatureECDSAWithSHA256
 		case elliptic.P384():
 			hashFunc = SHA384
-			sigAlgo.Algorithm = oidSignatureECDSAWithSHA384
+			sigAlgo.Algorithm = OIDSignatureECDSAWithSHA384
 		case elliptic.P521():
 			hashFunc = SHA512
-			sigAlgo.Algorithm = oidSignatureECDSAWithSHA512
+			sigAlgo.Algorithm = OIDSignatureECDSAWithSHA512
 		default:
 			err = errors.New("x509: unknown elliptic curve")
 		}
@@ -1847,7 +1872,7 @@ func signingParamsForPublicKey(pub interface{}, requestedSigAlgo SignatureAlgori
 		switch pub.Curve {
 		case sm2.P256Sm2():
 			hashFunc = SM3
-			sigAlgo.Algorithm = oidSignatureSM2WithSM3
+			sigAlgo.Algorithm = OIDSignatureSM2WithSM3
 		default:
 			err = errors.New("x509: unknown SM2 curve")
 		}
