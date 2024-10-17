@@ -22,51 +22,7 @@ import (
 	"github.com/gebaolei/gmsm/x509"
 )
 
-var (
-	// Signed Data OIDs
-	OIDData                   = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 7, 1}
-	OIDSignedData             = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 7, 2}
-	OIDEnvelopedData          = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 7, 3}
-	OIDEncryptedData          = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 7, 6}
-	OIDAttributeContentType   = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 9, 3}
-	OIDAttributeMessageDigest = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 9, 4}
-	OIDAttributeSigningTime   = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 9, 5}
-
-	// Digest Algorithms
-	OIDDigestAlgorithmSHA1   = asn1.ObjectIdentifier{1, 3, 14, 3, 2, 26}
-	OIDDigestAlgorithmSHA256 = asn1.ObjectIdentifier{2, 16, 840, 1, 101, 3, 4, 2, 1}
-	OIDDigestAlgorithmSHA384 = asn1.ObjectIdentifier{2, 16, 840, 1, 101, 3, 4, 2, 2}
-	OIDDigestAlgorithmSHA512 = asn1.ObjectIdentifier{2, 16, 840, 1, 101, 3, 4, 2, 3}
-
-	OIDDigestAlgorithmDSA     = asn1.ObjectIdentifier{1, 2, 840, 10040, 4, 1}
-	OIDDigestAlgorithmDSASHA1 = asn1.ObjectIdentifier{1, 2, 840, 10040, 4, 3}
-
-	OIDDigestAlgorithmECDSASHA1   = asn1.ObjectIdentifier{1, 2, 840, 10045, 4, 1}
-	OIDDigestAlgorithmECDSASHA256 = asn1.ObjectIdentifier{1, 2, 840, 10045, 4, 3, 2}
-	OIDDigestAlgorithmECDSASHA384 = asn1.ObjectIdentifier{1, 2, 840, 10045, 4, 3, 3}
-	OIDDigestAlgorithmECDSASHA512 = asn1.ObjectIdentifier{1, 2, 840, 10045, 4, 3, 4}
-
-	// Signature Algorithms
-	OIDEncryptionAlgorithmRSA       = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 1}
-	OIDEncryptionAlgorithmRSASHA1   = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 5}
-	OIDEncryptionAlgorithmRSASHA256 = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 11}
-	OIDEncryptionAlgorithmRSASHA384 = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 12}
-	OIDEncryptionAlgorithmRSASHA512 = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 13}
-
-	OIDEncryptionAlgorithmECDSAP256 = asn1.ObjectIdentifier{1, 2, 840, 10045, 3, 1, 7}
-	OIDEncryptionAlgorithmECDSAP384 = asn1.ObjectIdentifier{1, 3, 132, 0, 34}
-	OIDEncryptionAlgorithmECDSAP521 = asn1.ObjectIdentifier{1, 3, 132, 0, 35}
-
-	OIDEncryptionAlgorithmEDDSA25519 = asn1.ObjectIdentifier{1, 3, 101, 112}
-
-	// Encryption Algorithms
-	OIDEncryptionAlgorithmDESCBC     = asn1.ObjectIdentifier{1, 3, 14, 3, 2, 7}
-	OIDEncryptionAlgorithmDESEDE3CBC = asn1.ObjectIdentifier{1, 2, 840, 113549, 3, 7}
-	OIDEncryptionAlgorithmAES256CBC  = asn1.ObjectIdentifier{2, 16, 840, 1, 101, 3, 4, 1, 42}
-	OIDEncryptionAlgorithmAES128GCM  = asn1.ObjectIdentifier{2, 16, 840, 1, 101, 3, 4, 1, 6}
-	OIDEncryptionAlgorithmAES128CBC  = asn1.ObjectIdentifier{2, 16, 840, 1, 101, 3, 4, 1, 2}
-	OIDEncryptionAlgorithmAES256GCM  = asn1.ObjectIdentifier{2, 16, 840, 1, 101, 3, 4, 1, 46}
-)
+var ()
 var ErrUnsupportedContentType = errors.New("pkcs7: cannot parse data: unimplemented content type")
 
 // FailureInfo contains the failure details of an Time-Stamp request. See
@@ -657,18 +613,18 @@ func (t *Timestamp) populateSigningCertificateV2Ext(certificate *x509.Certificat
 
 // digestAlgorithmToOID converts the hash func to the corresponding OID.
 // This should have parity with [pkcs7.getHashForOID].
-func digestAlgorithmToOID(hash crypto.Hash) (asn1.ObjectIdentifier, error) {
+func digestAlgorithmToOID(hash x509.Hash) (asn1.ObjectIdentifier, error) {
 	switch hash {
-	case crypto.SHA1:
-		return OIDDigestAlgorithmSHA1, nil
-	case crypto.SHA256:
-		return OIDDigestAlgorithmSHA256, nil
-	case crypto.SHA384:
-		return OIDDigestAlgorithmSHA384, nil
-	case crypto.SHA512:
-		return OIDDigestAlgorithmSHA512, nil
-	case crypto.BLAKE2s_256:
-		return asn1.ObjectIdentifier([]int{1, 2, 156, 10197, 1, 401}), nil
+	case x509.SHA1:
+		return x509.OIDDigestAlgorithmSHA1, nil
+	case x509.SHA256:
+		return x509.OIDDigestAlgorithmSHA256, nil
+	case x509.SHA384:
+		return x509.OIDDigestAlgorithmSHA384, nil
+	case x509.SHA512:
+		return x509.OIDDigestAlgorithmSHA512, nil
+	case x509.SM3:
+		return x509.OIDDigestAlgorithmSM3, nil
 	}
 	return nil, ErrUnsupportedContentType
 }
@@ -679,12 +635,12 @@ func (t *Timestamp) generateSignedData(tstInfo []byte, signer crypto.Signer, cer
 		return nil, err
 	}
 
-	alg, err := digestAlgorithmToOID(opts.HashFunc())
+	alg, err := digestAlgorithmToOID((x509.Hash)(opts.HashFunc()))
 	if err != nil {
 		return nil, err
 	}
 	signedData.SetDigestAlgorithm(alg)
-	signedData.SetContentType(asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 9, 16, 1, 4})
+	signedData.SetContentType(x509.OIDTSTINFO)
 	signedData.GetSignedData().Version = 3
 
 	signingCertV2Bytes, err := t.populateSigningCertificateV2Ext(certificate)
@@ -695,7 +651,7 @@ func (t *Timestamp) generateSignedData(tstInfo []byte, signer crypto.Signer, cer
 	signerInfoConfig := x509.SignerInfoConfig{
 		ExtraSignedAttributes: []x509.Attribute{
 			{
-				Type:  asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 9, 16, 2, 47},
+				Type:  x509.OIDSIGNINGCERTIFICATEV2,
 				Value: asn1.RawValue{FullBytes: signingCertV2Bytes},
 			},
 		},

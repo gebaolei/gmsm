@@ -323,6 +323,7 @@ const (
 	SM2WithSM3
 	SM2WithSHA1
 	SM2WithSHA256
+	SM21
 )
 
 func (algo SignatureAlgorithm) isRSAPSS() bool {
@@ -424,61 +425,6 @@ const (
 //    us(840) ansi-X9-62(10045) signatures(4) ecdsa-with-SHA2(3) 4 }
 
 var (
-	// Signature Algorithms
-	OIDSignatureRSA             = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 1}
-	OIDSignatureMD2WithRSA      = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 2}
-	OIDSignatureMD5WithRSA      = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 4}
-	OIDSignatureSHA1WithRSA     = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 5}
-	OIDSignatureSHA256WithRSA   = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 11}
-	OIDSignatureSHA384WithRSA   = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 12}
-	OIDSignatureSHA512WithRSA   = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 13}
-	OIDSignatureRSAPSS          = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 10}
-	OIDSignatureDSAWithSHA1     = asn1.ObjectIdentifier{1, 2, 840, 10040, 4, 3}
-	OIDSignatureDSAWithSHA256   = asn1.ObjectIdentifier{2, 16, 840, 1, 101, 3, 4, 3, 2}
-	OIDSignatureECDSAWithSHA1   = asn1.ObjectIdentifier{1, 2, 840, 10045, 4, 1}
-	OIDSignatureECDSAWithSHA256 = asn1.ObjectIdentifier{1, 2, 840, 10045, 4, 3, 2}
-	OIDSignatureECDSAWithSHA384 = asn1.ObjectIdentifier{1, 2, 840, 10045, 4, 3, 3}
-	OIDSignatureECDSAWithSHA512 = asn1.ObjectIdentifier{1, 2, 840, 10045, 4, 3, 4}
-
-	OIDEncryptionAlgorithmECDSAP256  = asn1.ObjectIdentifier{1, 2, 840, 10045, 3, 1, 7}
-	OIDEncryptionAlgorithmECDSAP384  = asn1.ObjectIdentifier{1, 3, 132, 0, 34}
-	OIDEncryptionAlgorithmECDSAP521  = asn1.ObjectIdentifier{1, 3, 132, 0, 35}
-	OIDEncryptionAlgorithmEDDSA25519 = asn1.ObjectIdentifier{1, 3, 101, 112}
-
-	OIDSignatureSM2WithSM3    = asn1.ObjectIdentifier{1, 2, 156, 10197, 1, 501}
-	OIDSignatureSM2WithSHA1   = asn1.ObjectIdentifier{1, 2, 156, 10197, 1, 502}
-	OIDSignatureSM2WithSHA256 = asn1.ObjectIdentifier{1, 2, 156, 10197, 1, 503}
-	OIDSignatureDSASM2        = asn1.ObjectIdentifier{1, 2, 156, 10197, 1, 301, 1}
-	//	oidSignatureSM3WithRSA      = asn1.ObjectIdentifier{1, 2, 156, 10197, 1, 504}
-
-	// Encryption Algorithms
-	OIDEncryptionAlgorithmDESCBC     = asn1.ObjectIdentifier{1, 3, 14, 3, 2, 7}
-	OIDEncryptionAlgorithmDESEDE3CBC = asn1.ObjectIdentifier{1, 2, 840, 113549, 3, 7}
-	OIDEncryptionAlgorithmAES256CBC  = asn1.ObjectIdentifier{2, 16, 840, 1, 101, 3, 4, 1, 42}
-	OIDEncryptionAlgorithmAES128GCM  = asn1.ObjectIdentifier{2, 16, 840, 1, 101, 3, 4, 1, 6}
-	OIDEncryptionAlgorithmAES128CBC  = asn1.ObjectIdentifier{2, 16, 840, 1, 101, 3, 4, 1, 2}
-	OIDEncryptionAlgorithmAES256GCM  = asn1.ObjectIdentifier{2, 16, 840, 1, 101, 3, 4, 1, 46}
-
-	// Digest Algorithms
-	OIDDigestAlgorithmSHA1          = asn1.ObjectIdentifier{1, 3, 14, 3, 2, 26}
-	OIDDigestAlgorithmSHA256        = asn1.ObjectIdentifier{2, 16, 840, 1, 101, 3, 4, 2, 1}
-	OIDDigestAlgorithmSHA384        = asn1.ObjectIdentifier{2, 16, 840, 1, 101, 3, 4, 2, 2}
-	OIDDigestAlgorithmSHA512        = asn1.ObjectIdentifier{2, 16, 840, 1, 101, 3, 4, 2, 3}
-	OIDDigestAlgorithmDSA           = asn1.ObjectIdentifier{1, 2, 840, 10040, 4, 1}
-	OIDDigestAlgorithmDSASHA1       = asn1.ObjectIdentifier{1, 2, 840, 10040, 4, 3}
-	OIDDigestAlgorithmECDSASHA1     = asn1.ObjectIdentifier{1, 2, 840, 10045, 4, 1}
-	OIDDigestAlgorithmECDSASHA256   = asn1.ObjectIdentifier{1, 2, 840, 10045, 4, 3, 2}
-	OIDDigestAlgorithmECDSASHA384   = asn1.ObjectIdentifier{1, 2, 840, 10045, 4, 3, 3}
-	OIDDigestAlgorithmECDSASHA512   = asn1.ObjectIdentifier{1, 2, 840, 10045, 4, 3, 4}
-	OIDDigestAlgorithmSM3           = asn1.ObjectIdentifier{1, 2, 156, 10197, 1, 401}
-	OIDDigestAlgorithmSM3WithoutKey = asn1.ObjectIdentifier{1, 2, 156, 10197, 1, 401, 1}
-
-	OIDMGF1 = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 8}
-
-	// oidISOSignatureSHA1WithRSA means the same as oidSignatureSHA1WithRSA
-	// but it's specified by ISO. Microsoft's makecert.exe has been known
-	// to produce certificates with this OID.
-	OIDISOSignatureSHA1WithRSA = asn1.ObjectIdentifier{1, 3, 14, 3, 2, 29}
 )
 
 var signatureAlgorithmDetails = []struct {
@@ -1010,6 +956,8 @@ func checkSignature(algo SignatureAlgorithm, signed, signature []byte, publicKey
 	case MD2WithRSA, MD5WithRSA:
 		return InsecureAlgorithmError(algo)
 	case SM2WithSM3: // SM3WithRSA reserve
+		hashType = SM3
+	case SM21:
 		hashType = SM3
 	default:
 		return ErrUnsupportedAlgorithm

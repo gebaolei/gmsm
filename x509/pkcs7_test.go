@@ -3,6 +3,7 @@ package x509
 import (
 	"crypto/x509/pkix"
 	"encoding/asn1"
+	"encoding/base64"
 	"math/big"
 	"net"
 	"testing"
@@ -149,4 +150,23 @@ func TestPKCS7SM2(t *testing.T) {
 		t.Fatal("failed to PKCS7Decrypt ")
 	}
 	t.Log("decrypt success! data: ", string(decryptData))
+}
+
+var SignedDataRaw = `MIIEqgYKKoEcz1UGAQQCAqCCBJowggSWAgEBMQ8wDQYJKoEcz1UBgxEBBQAwZwYLKoZIhvcNAQkQAQSgWARWMFQCAQEGCCsGAQUFBwMIMC4wCgYIKoEcz1UBgxEEIG4PnhQ0TFQGoM9aO037Zl+H9Kdxox9+27XHKHSjKylXAgQF9eEBGA8yMDI0MTAxNDA4NTMxOFqgggLkMIIC4DCCAoWgAwIBAgIKGhAAAAAABB/fhzAKBggqgRzPVQGDdTBEMQswCQYDVQQGEwJDTjENMAsGA1UECgwEQkpDQTENMAsGA1UECwwEQkpDQTEXMBUGA1UEAwwOQmVpamluZyBTTTIgQ0EwHhcNMjMxMjI1MTYwMDAwWhcNMzMwMTEwMTU1OTU5WjCBjDFFMEMGA1UEAww85Lit5Zu955S15L+h6IKh5Lu95pyJ6ZmQ5YWs5Y+45bi45bee5YiG5YWs5Y+45pe26Ze05oiz6K+B5LmmMTYwNAYDVQQKDC3kuK3lm73nlLXkv6HogqHku73mnInpmZDlhazlj7jluLjlt57liIblhazlj7gxCzAJBgNVBAYMAkNOMFkwEwYHKoZIzj0CAQYIKoEcz1UBgi0DQgAEOCv8+WY/3XQFOcTqQaBwsUs+FHwlM7S6TODMpTXjy77XoVZcR4rAkJRKm0loPSxtPzkdIsTNKNjn+OcZF1Fuf6OCARQwggEQMB8GA1UdIwQYMBaAFB/mz9SPxSIql0opihXnFsmSNMS2MIGfBgNVHR8EgZcwgZQwYaBfoF2kWzBZMQswCQYDVQQGEwJDTjENMAsGA1UECgwEQkpDQTENMAsGA1UECwwEQkpDQTEXMBUGA1UEAwwOQmVpamluZyBTTTIgQ0ExEzARBgNVBAMTCmNhMjFjcmwzNDkwL6AtoCuGKWh0dHA6Ly9jcmwuYmpjYS5vcmcuY24vY3JsL2NhMjFjcmwzNDkuY3JsMBEGCWCGSAGG+EIBAQQEAwIA/zALBgNVHQ8EBAMCA/gwFgYDVR0lAQH/BAwwCgYIKwYBBQUHAwgwEwYKKoEchu8yAgEBHgQFDAM2NTQwCgYIKoEcz1UBg3UDSQAwRgIhANOLWzxLbB5olg4u3jPfBwUOqifp0Dm+TQezWwtY64ZfAiEA834WVlowrWXHVSzh6B/4BJn62Xg8mwMuXHyFZYnUWrsxggEtMIIBKQIBATBSMEQxCzAJBgNVBAYTAkNOMQ0wCwYDVQQKDARCSkNBMQ0wCwYDVQQLDARCSkNBMRcwFQYDVQQDDA5CZWlqaW5nIFNNMiBDQQIKGhAAAAAABB/fhzAMBggqgRzPVQGDEQUAoGswGgYJKoZIhvcNAQkDMQ0GCyqGSIb3DQEJEAEEMBwGCSqGSIb3DQEJBTEPFw0yNDEwMTQwODUzMThaMC8GCSqGSIb3DQEJBDEiBCAlLC8a+RK4126IZTyIpBV3qhXlXLZC66obkxHq1vLH0DANBgkqgRzPVQGCLQEFAARGMEQCIHmrF3HPvEQViO9GFcD4c7ukt/yTNNPP2u5Ju2RjD6BkAiABGelv3bmdmynGSc39XgA5WycgffxwI8aid//KKnOTmQ==`
+
+func TestParsePKCS7(t *testing.T) {
+	bys, err := base64.StdEncoding.DecodeString(SignedDataRaw)
+	if err != nil {
+		t.Fatal("raw data base64 decode error: ", err.Error())
+	}
+	p7, err := ParsePKCS7(bys)
+	if err != nil {
+		t.Fatal("rparse pkcsy error: ", err.Error())
+	}
+	if len(p7.Certificates) > 0 {
+		if err := p7.Verify(); err != nil {
+			t.Fatal("verify failed: ", err.Error())
+		}
+	}
+
 }
