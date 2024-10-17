@@ -316,6 +316,25 @@ func getSignatureAlgorithmByHash(hash Hash, oid asn1.ObjectIdentifier) Signature
 		switch {
 		case oid.Equal(OIDSignatureDSASM2):
 			return SM2WithSHA256
+		case oid.Equal(OIDSignatureSHA256WithRSA):
+			return SHA256WithRSA
+		}
+	case SHA512:
+		switch {
+		case oid.Equal(OIDSignatureSHA512WithRSA):
+			return SHA256WithRSA
+		}
+	case SHA384:
+		switch {
+		case oid.Equal(OIDSignatureSHA384WithRSA):
+			return SHA384WithRSA
+		}
+	case SHA1:
+		switch {
+		case oid.Equal(OIDSignatureDSASM2):
+			return SM2WithSHA256
+		case oid.Equal(OIDSignatureDSAWithSHA256):
+			return SHA256WithRSA
 		}
 	}
 	return UnknownSignatureAlgorithm
@@ -358,11 +377,16 @@ func getHashForOID(oid asn1.ObjectIdentifier) (Hash, error) {
 		return SHA1, nil
 	case oid.Equal(OIDDigestAlgorithmSHA256):
 		return SHA256, nil
+	case oid.Equal(OIDDigestAlgorithmSHA384):
+		return SHA384, nil
+	case oid.Equal(OIDDigestAlgorithmSHA512):
+		return SHA512, nil
 	case oid.Equal(OIDDigestAlgorithmSM3):
+		return SM3, nil
 	case oid.Equal(OIDDigestAlgorithmSM3WithoutKey):
 		return SM3, nil
 	}
-	return Hash(0), ErrPKCS7UnsupportedAlgorithm
+	return Hash(0), ErrPKCS7UnsupportedDigestAlgorithm
 }
 
 // GetOnlySigner returns an x509.Certificate for the first signer of the signed
@@ -377,6 +401,7 @@ func (p7 *PKCS7) GetOnlySigner() *Certificate {
 
 // ErrPKCS7UnsupportedAlgorithm tells you when our quick dev assumptions have failed
 var ErrPKCS7UnsupportedAlgorithm = errors.New("pkcs7: cannot decrypt data: only RSA, DES, DES-EDE3, AES-256-CBC and AES-128-GCM supported")
+var ErrPKCS7UnsupportedDigestAlgorithm = errors.New("pkcs7: cannot digest data: only sha1, sha256, sha384, sha512 and sm3 supported")
 
 // ErrNotEncryptedContent is returned when attempting to Decrypt data that is not encrypted data
 var ErrNotEncryptedContent = errors.New("pkcs7: content data is a decryptable data type")
@@ -775,6 +800,18 @@ func getOIDForEncryptionAlgorithm(keyOrSigner interface{}, OIDDigestAlg asn1.Obj
 		case OIDDigestAlg.Equal(OIDDigestAlgorithmSHA512):
 			return OIDDigestAlgorithmECDSASHA512, nil
 		}
+
+	case *sm2.PublicKey:
+		switch {
+		default:
+			return OIDSignatureSM2WithSM3, nil
+		case OIDDigestAlg.Equal(OIDDigestAlgorithmSM3):
+			return OIDSignatureSM2WithSM3, nil
+		case OIDDigestAlg.Equal(OIDDigestAlgorithmSHA1):
+			return OIDSignatureSM2WithSHA1, nil
+		case OIDDigestAlg.Equal(OIDDigestAlgorithmSHA256):
+			return OIDSignatureSM2WithSHA256, nil
+		}
 	case ed25519.PublicKey:
 		return OIDEncryptionAlgorithmEDDSA25519, nil
 	}
@@ -928,11 +965,37 @@ func signAttributes(attrs []attribute, pkey crypto.PrivateKey, hash Hash) ([]byt
 	h := hash.New()
 	h.Write(attrBytes)
 	hashed := h.Sum(nil)
-	switch priv := pkey.(type) {
-	case *rsa.PrivateKey:
-		return rsa.SignPKCS1v15(rand.Reader, priv, crypto.SHA1, hashed)
+	// switch priv := pkey.(type) {
+	// case *rsa.PrivateKey:
+	// 	return rsa.SignPKCS1v15(rand.Reader, priv, crypto.SHA1, hashed)
+	// }
+	// return nil, ErrPKCS7UnsupportedAlgorithm
+
+	// dsa doesn't implement crypto.Signer so we make a special case
+	// https://github.com/golang/go/issues/27889
+	switch pkey := pkey.(type) {
+	case *dsa.PrivateKey:
+		r, s, err := dsa.Sign(rand.Reader, pkey, hashed)
+		if err != nil {
+			return nil, err
+		}
+		return asn1.Marshal(dsaSignature{r, s})
+	case *sm2.PrivateKey:
+		return pkey.Sign(rand.Reader, attrBytes, nil)
 	}
-	return nil, ErrPKCS7UnsupportedAlgorithm
+
+	signer, ok := pkey.(crypto.Signer)
+	if !ok {
+		return nil, errors.New("pkcs7: private key does not implement crypto.Signer")
+	}
+
+	// special case for Ed25519, which hashes as part of the signing algorithm
+	_, ok = signer.Public().(ed25519.PublicKey)
+	if ok {
+		return signer.Sign(rand.Reader, attrBytes, crypto.Hash(0))
+	}
+
+	return signer.Sign(rand.Reader, hashed, hash)
 }
 
 // concats and wraps the certificates in the RawValue structure
