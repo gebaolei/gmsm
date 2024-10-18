@@ -10,11 +10,11 @@ import (
 // use directly from crypto/x509 when exported as suggested below.
 
 var hashOIDs = map[x509.Hash]asn1.ObjectIdentifier{
-	x509.SHA1:   asn1.ObjectIdentifier([]int{1, 3, 14, 3, 2, 26}),
-	x509.SHA256: asn1.ObjectIdentifier([]int{2, 16, 840, 1, 101, 3, 4, 2, 1}),
-	x509.SHA384: asn1.ObjectIdentifier([]int{2, 16, 840, 1, 101, 3, 4, 2, 2}),
-	x509.SHA512: asn1.ObjectIdentifier([]int{2, 16, 840, 1, 101, 3, 4, 2, 3}),
-	x509.SM3:    asn1.ObjectIdentifier([]int{1, 2, 156, 10197, 1, 401}),
+	x509.SHA1:   x509.OIDDigestAlgorithmSHA1,
+	x509.SHA256: x509.OIDDigestAlgorithmSHA256,
+	x509.SHA384: x509.OIDDigestAlgorithmSHA384,
+	x509.SHA512: x509.OIDDigestAlgorithmSHA512,
+	x509.SM3:    x509.OIDDigestAlgorithmSM3,
 }
 
 // TODO(rlb): This is not taken from crypto/x509, but it's of the same general form.

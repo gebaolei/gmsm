@@ -132,7 +132,7 @@ func ParsePKCS7(data []byte) (p7 *PKCS7, err error) {
 	switch {
 	case info.ContentType.Equal(OIDSignedData):
 		return parseSignedData(info.Content.Bytes)
-	case info.ContentType.Equal(OIDSMSignedData):
+	case info.ContentType.Equal(OIDSM2SignedData):
 		return parseSignedData(info.Content.Bytes)
 	case info.ContentType.Equal(OIDEnvelopedData):
 		return parseEnvelopedData(info.Content.Bytes)
@@ -260,12 +260,12 @@ func getSignatureAlgorithmByHash(hash Hash, oid asn1.ObjectIdentifier) Signature
 		switch {
 		case oid.Equal(OIDSignatureSM2WithSM3):
 			return SM2WithSM3
-		case oid.Equal(OIDSignatureDSASM2):
+		case oid.Equal(OIDSignatureDigestSM2):
 			return SM21
 		}
 	case SHA256:
 		switch {
-		case oid.Equal(OIDSignatureDSASM2):
+		case oid.Equal(OIDSignatureDigestSM2):
 			return SM2WithSHA256
 		case oid.Equal(OIDSignatureSHA256WithRSA):
 			return SHA256WithRSA
@@ -282,7 +282,7 @@ func getSignatureAlgorithmByHash(hash Hash, oid asn1.ObjectIdentifier) Signature
 		}
 	case SHA1:
 		switch {
-		case oid.Equal(OIDSignatureDSASM2):
+		case oid.Equal(OIDSignatureDigestSM2):
 			return SM2WithSHA256
 		case oid.Equal(OIDSignatureDSAWithSHA256):
 			return SHA256WithRSA
@@ -320,24 +320,6 @@ func getCertFromCertsByIssuerAndSerial(certs []*Certificate, ias issuerAndSerial
 		}
 	}
 	return nil
-}
-
-func getHashForOID(oid asn1.ObjectIdentifier) (Hash, error) {
-	switch {
-	case oid.Equal(oidDigestAlgorithmSHA1):
-		return SHA1, nil
-	case oid.Equal(OIDDigestAlgorithmSHA256):
-		return SHA256, nil
-	case oid.Equal(OIDDigestAlgorithmSHA384):
-		return SHA384, nil
-	case oid.Equal(OIDDigestAlgorithmSHA512):
-		return SHA512, nil
-	case oid.Equal(OIDDigestAlgorithmSM3):
-		return SM3, nil
-	case oid.Equal(OIDDigestAlgorithmSM3WithoutKey):
-		return SM3, nil
-	}
-	return Hash(0), ErrPKCS7UnsupportedDigestAlgorithm
 }
 
 // GetOnlySigner returns an x509.Certificate for the first signer of the signed
@@ -574,11 +556,10 @@ func (p7 *PKCS7) UnmarshalSignedAttribute(attributeType asn1.ObjectIdentifier, o
 
 // SignedData is an opaque data structure for creating signed data payloads
 type SignedData struct {
-	sd                  signedData
-	certs               []*Certificate
-	data, messageDigest []byte
-	digestOid           asn1.ObjectIdentifier
-	encryptionOid       asn1.ObjectIdentifier
+	sd                                       signedData
+	certs                                    []*Certificate
+	data, messageDigest                      []byte
+	contentTypeOid, digestOid, encryptionOid asn1.ObjectIdentifier
 }
 
 // Attribute represents a key value pair attribute. Value must be marshalable byte
@@ -605,18 +586,30 @@ func NewSignedData(data []byte) (*SignedData, error) {
 		ContentType: OIDData,
 		Content:     asn1.RawValue{Class: 2, Tag: 0, Bytes: content, IsCompound: true},
 	}
-	digAlg := pkix.AlgorithmIdentifier{
-		Algorithm: oidDigestAlgorithmSHA1,
-	}
-	h := crypto.SHA1.New()
-	h.Write(data)
-	md := h.Sum(nil)
+	// digAlg := pkix.AlgorithmIdentifier{
+	// 	Algorithm: oidDigestAlgorithmSHA1,
+	// }
+	// h := crypto.SHA1.New()
+	// h.Write(data)
+	// md := h.Sum(nil)
 	sd := signedData{
-		ContentInfo:                ci,
-		Version:                    1,
-		DigestAlgorithmIdentifiers: []pkix.AlgorithmIdentifier{digAlg},
+		ContentInfo: ci,
+		Version:     1,
+		// DigestAlgorithmIdentifiers: []pkix.AlgorithmIdentifier{digAlg},
 	}
-	return &SignedData{sd: sd, messageDigest: md, data: data, digestOid: OIDDigestAlgorithmSHA1}, nil
+	return &SignedData{sd: sd, data: data, digestOid: OIDDigestAlgorithmSHA1, contentTypeOid: OIDSignedData}, nil
+}
+
+// NewSignedData initializes a SignedData with content
+func NewSMSignedData(data []byte) (*SignedData, error) {
+	sd, err := NewSignedData(data)
+	if err != nil {
+		return nil, err
+	}
+	sd.sd.ContentInfo.ContentType = OIDSM2Data
+	sd.digestOid = OIDDigestAlgorithmSM3
+	sd.contentTypeOid = OIDSM2SignedData
+	return sd, nil
 }
 
 type attributes struct {
@@ -706,67 +699,6 @@ func (sd *SignedData) SetContentType(contentType asn1.ObjectIdentifier) {
 // GetSignedData returns the private Signed Data
 func (sd *SignedData) GetSignedData() *signedData {
 	return &sd.sd
-}
-
-// getOIDForEncryptionAlgorithm takes a private key or signer and
-// the OID of a digest algorithm to return the appropriate signerInfo.DigestEncryptionAlgorithm
-func getOIDForEncryptionAlgorithm(keyOrSigner interface{}, OIDDigestAlg asn1.ObjectIdentifier) (asn1.ObjectIdentifier, error) {
-	_, ok := keyOrSigner.(*dsa.PrivateKey)
-	if ok {
-		return OIDDigestAlgorithmDSA, nil
-	}
-
-	signer, ok := keyOrSigner.(crypto.Signer)
-	if !ok {
-		return nil, errors.New("pkcs7: key does not implement crypto.Signer")
-	}
-	switch signer.Public().(type) {
-	case *rsa.PublicKey:
-		switch {
-		default:
-			return OIDSignatureRSA, nil
-		case OIDDigestAlg.Equal(OIDSignatureRSA):
-			return OIDSignatureRSA, nil
-		case OIDDigestAlg.Equal(OIDDigestAlgorithmSHA1):
-			return OIDSignatureSHA1WithRSA, nil
-		case OIDDigestAlg.Equal(OIDDigestAlgorithmSHA256):
-			return OIDSignatureSHA256WithRSA, nil
-		case OIDDigestAlg.Equal(OIDDigestAlgorithmSHA384):
-			return OIDSignatureSHA384WithRSA, nil
-		case OIDDigestAlg.Equal(OIDDigestAlgorithmSHA512):
-			return OIDSignatureSHA512WithRSA, nil
-		}
-	case *ecdsa.PublicKey:
-		switch {
-		default:
-			return OIDSignatureSM2WithSM3, nil
-		case OIDDigestAlg.Equal(OIDDigestAlgorithmSM3):
-			return OIDSignatureSM2WithSM3, nil
-		case OIDDigestAlg.Equal(OIDDigestAlgorithmSHA1):
-			return OIDDigestAlgorithmECDSASHA1, nil
-		case OIDDigestAlg.Equal(OIDDigestAlgorithmSHA256):
-			return OIDDigestAlgorithmECDSASHA256, nil
-		case OIDDigestAlg.Equal(OIDDigestAlgorithmSHA384):
-			return OIDDigestAlgorithmECDSASHA384, nil
-		case OIDDigestAlg.Equal(OIDDigestAlgorithmSHA512):
-			return OIDDigestAlgorithmECDSASHA512, nil
-		}
-
-	case *sm2.PublicKey:
-		switch {
-		default:
-			return OIDSignatureSM2WithSM3, nil
-		case OIDDigestAlg.Equal(OIDDigestAlgorithmSM3):
-			return OIDSignatureSM2WithSM3, nil
-		case OIDDigestAlg.Equal(OIDDigestAlgorithmSHA1):
-			return OIDSignatureSM2WithSHA1, nil
-		case OIDDigestAlg.Equal(OIDDigestAlgorithmSHA256):
-			return OIDSignatureSM2WithSHA256, nil
-		}
-	case ed25519.PublicKey:
-		return OIDEncryptionAlgorithmEDDSA25519, nil
-	}
-	return nil, fmt.Errorf("pkcs7: cannot convert encryption algorithm to oid, unknown key type %T", signer.Public())
 }
 
 // verifyPartialChain checks that a given cert is issued by the first parent in the list,
@@ -891,8 +823,8 @@ func (sd *SignedData) Finish() ([]byte, error) {
 		return nil, err
 	}
 	outer := contentInfo{
-		ContentType: OIDSignedData,
-		Content:     asn1.RawValue{Class: 2, Tag: 0, Bytes: inner, IsCompound: true},
+		ContentType: sd.contentTypeOid,
+		Content:     asn1.RawValue{Class: asn1.ClassContextSpecific, Tag: 0, Bytes: inner, IsCompound: true},
 	}
 	return asn1.Marshal(outer)
 }

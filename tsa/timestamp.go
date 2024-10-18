@@ -19,6 +19,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gebaolei/gmsm/sm2"
 	"github.com/gebaolei/gmsm/x509"
 )
 
@@ -630,7 +631,14 @@ func digestAlgorithmToOID(hash x509.Hash) (asn1.ObjectIdentifier, error) {
 }
 
 func (t *Timestamp) generateSignedData(tstInfo []byte, signer crypto.Signer, certificate *x509.Certificate, opts crypto.SignerOpts) ([]byte, error) {
-	signedData, err := x509.NewSignedData(tstInfo)
+	var signedData *x509.SignedData
+	var err error
+	_, ok := signer.(*sm2.PrivateKey)
+	if ok {
+		signedData, err = x509.NewSMSignedData(tstInfo)
+	} else {
+		signedData, err = x509.NewSignedData(tstInfo)
+	}
 	if err != nil {
 		return nil, err
 	}

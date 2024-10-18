@@ -424,8 +424,7 @@ const (
 // ecdsa-with-SHA512 OBJECT IDENTIFIER ::= { iso(1) member-body(2)
 //    us(840) ansi-X9-62(10045) signatures(4) ecdsa-with-SHA2(3) 4 }
 
-var (
-)
+var ()
 
 var signatureAlgorithmDetails = []struct {
 	algo       SignatureAlgorithm
@@ -476,9 +475,9 @@ func rsaPSSParameters(hashFunc Hash) asn1.RawValue {
 	case SHA256:
 		hashOID = OIDDigestAlgorithmSHA256
 	case SHA384:
-		hashOID = OIDDigestAlgorithmECDSASHA384
+		hashOID = OIDSignatureECDSAWithSHA384
 	case SHA512:
-		hashOID = OIDDigestAlgorithmECDSASHA512
+		hashOID = OIDSignatureECDSAWithSHA512
 	}
 
 	params := pssParameters{
