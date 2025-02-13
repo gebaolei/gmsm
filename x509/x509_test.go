@@ -17,10 +17,12 @@ package x509
 
 import (
 	"crypto"
+	"crypto/ecdsa"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509/pkix"
 	"encoding/asn1"
+	"encoding/base64"
 	"fmt"
 	"math/big"
 	"net"
@@ -30,6 +32,27 @@ import (
 
 	"github.com/gebaolei/gmsm/sm2"
 )
+
+func TestAnysign(t *testing.T) {
+	certpem := `-----BEGIN CERTIFICATE-----
+MIIGXjCCBgOgAwIBAgINKmdqIzHOjZMIDu8YYzAMBggqgRzPVQGDdQUAMGExCzAJBgNVBAYMAkNOMQ0wCwYDVQQKDARCSkNBMSUwIwYDVQQLDBxCSkNBIEFueXdyaXRlIFRydXN0IFNlcnZpY2VzMRwwGgYDVQQDDBNUcnVzdC1TaWduIFNNMiBDQS0xMB4XDTI0MTIyNDAyNTc1MloXDTI0MTIyNTAyNTc1MlowRjELMAkGA1UEBgwCQ04xFzAVBgNVBAsMDumTgei3r2Nh5rWL6K+VMR4wHAYDVQQDDBXnjovlpKfplKTvvIjmtYvor5XvvIkwWTATBgcqhkjOPQIBBggqgRzPVQGCLQNCAASAWFOudXIPRDGfTEqcge273CScDj/2gpdcM7m6VLZp60jXsbFvUeZ0ciaTWKm1/mQSO1mq3C2lQieD+OwnFBL9o4IEtzCCBLMwDgYDVR0PAQH/BAQDAgbAMAkGA1UdEwQCMAAwHQYDVR0OBBYEFAf4LJNEMmJgN1xNrp9svOg/FtRqMB8GA1UdIwQYMBaAFNbTCll0aA4P+8s9aW+YfPH9bs2jMD0GA1UdIAQ2MDQwMgYJKoEchu8yAgICMCUwIwYIKwYBBQUHAgEWF2h0dHBzOi8vd3d3LmJqY2EuY24vQ1BTMIGOBgNVHR8EgYYwgYMwRqBEoEKGQGh0dHA6Ly9jcmwuYmpjYS5vcmcuY24vY3JsL1RydXN0X1NpZ25fU00yXzEvVHJ1c3RfU2lnbl9TTTJfMS5jcmwwOaA3oDWGM2h0dHA6Ly9jcmwuYmpjYS5vcmcuY24vY3JsL1RydXN0X1NpZ25fU00yXzEvMTAwLmNybDCCA4QGCiqBHIbvMgIBCQEEggN0ZXlKRGJHbGxiblJQVXlJNmV5SldaWEp6YVc5dUlqb2lOUzR3SUNoWGFXNWtiM2R6SUU1VUlERXdMakE3SUZkUFZ6WTBLU0JCY0hCc1pWZGxZa3RwZEM4MU16Y3VNellnS0V0SVZFMU1MQ0JzYVd0bElFZGxZMnR2S1NCRGFISnZiV1V2T0RZdU1DNDBNalF3TGpFNU9DQlRZV1poY21rdk5UTTNMak0ySWl3aVQxTkJjbU5vSWpvaU16SXZOalFpTENKVFpYSjJhV05sVUdGamF5STZJazV2Ym1VaUxDSkZaR2wwYVc5dUlqb2lUVzk2YVd4c1lTSXNJazVoYldVaU9pSlhaV2xZYVc1ZlYybHVNeklpZlN3aVFtbHZTR0Z6YUNJNlczc2lSbTl5YldGMElqb2lhVzFoWjJVdmNHNW5JaXdpU0dGemFFRnNaeUk2SWxOTk15SXNJa052Ym5SbGJuUWlPaUk0T0VaR05EUTBRVGhFT1RVME5qUTFRVVZHUkRBelF6WkVOek0xTVRjd01rRXdSRVE0TURJd05UaEJOREV6UWtFNE56bEJSRU01TWtRMFJqRkdOVVZDSWl3aVNHRnphRlI1Y0dVaU9pSm9ZWE5vTDNOamNtbHdkQ0o5TEhzaVJtOXliV0YwSWpvaWVtbHdJaXdpU0dGemFFRnNaeUk2SWxOTk15SXNJa052Ym5SbGJuUWlPaUkyTUVJMlJVSkNSVEZCT0RnNE9ESkJPRGM0UkVKRVFrVTBPVE0xTVRCRE56Z3pRelV6UmtGRU5UVTJOa05GUXprNE16YzJSalUwTkRReVJrVkVSamhDSWl3aVNHRnphRlI1Y0dVaU9pSm9ZWE5vTDNOamNtbHdkR1JoZEdFaWZWMHNJbEpoZDBoaGMyZ2lPaUpsUm05SmRHeDRkVXBPYUhoNmFsVlRhMnBPTmxWaVVVcFNhVEV5ZG1oRWNpdHdPV05xSzFWTVdFaHJQU0lzSWtoaGMyaGhiR2NpT2lKVFRUTWlMQ0pXWlhKemFXOXVJam9pTXk0eUlpd2lTVVJVZVhCbElqb2lNU0lzSWtsRVRuVnRZbVZ5SWpvaVRucGFORTVYZGxkRmMwc3ZZM0ZJTTBwWGJXOXRNRzkxTkd0VWJFeHJTSFl3ZEhsMlpsVjFiR3BsTUQwaWZRPT0wDAYIKoEcz1UBg3UFAANHADBEAiA6YkkDW0G5DracxS4seD3ALzxUh5eIsYAjJO2OWRncFwIgZbQiZpJu355X2TBg7x/TWQWVqtphNF9YBAXeG9VcoEw=
+-----END CERTIFICATE-----`
+	signdata := `MEUCIH3Lb3/XEwFnWcqbwzC5ygVxUUp4ab82k/dXRohzpFjBAiEAuqKEPBb8h2k66WWO/AECTd0+Jba3MAE7726xzB7KnjE=`
+	cert, err := ReadCertificateFromPem([]byte(certpem))
+	if err != nil {
+		t.Fatal(err)
+	}
+	switch pubKey := cert.PublicKey.(type) {
+	case *ecdsa.PublicKey:
+		sm2pk := (*sm2.PublicKey)(pubKey)
+		sign, _ := base64.StdEncoding.DecodeString(signdata)
+		if sm2pk.Verify([]byte("ziyunb"), sign) {
+			fmt.Printf("Verify ok\n")
+		} else {
+			t.Fatal("Verify failed")
+		}
+	}
+}
 
 func TestX509(t *testing.T) {
 	priv, err := sm2.GenerateKey(nil) // 生成密钥对
@@ -153,6 +176,38 @@ func TestX509(t *testing.T) {
 	} else {
 		fmt.Printf("CheckSignature ok\n")
 	}
+}
+
+func TestVerifyBjcaMFSign(t *testing.T) {
+	certPem := "-----BEGIN CERTIFICATE-----\nMIIC6jCCAo6gAwIBAgINKmetTfTOjZNjPt1wpjAMBggqgRzPVQGDdQUAMGcxCzAJBgNVBAYTAkNOMQ0wCwYDVQQKDARCSkNBMTMwMQYDVQQLDCrnrb7lj5HmtYvor5Xor4HkuabkuI3og73nlKjkuo7nlJ/kuqfkuJrliqExFDASBgNVBAMMC1NNMua1i+ivlUNBMB4XDTI1MDIxMzAwNDIxMVoXDTI1MDIxMzEzNDIxMVowRDELMAkGA1UEBgwCQ04xJDAiBgNVBAoMG+atpui/m+WMuumdnuekvuS/neW+hemBh+WPkTEPMA0GA1UEAwwG5p2o6ZuEMFkwEwYHKoZIzj0CAQYIKoEcz1UBgi0DQgAE9zl1D/1UpMkogXOXDWbDaM4dPAVeibPjL9HrtjWgdSGjqilBlxp0hQGQbTzcbvOk8VfirYxE/Woqt562EG8e0KOCAT4wggE6MA4GA1UdDwEB/wQEAwIGwDAJBgNVHRMEAjAAMIGFBgNVHR8EfjB8MEKgQKA+hjxodHRwOi8vY3JsLmJqY2Eub3JnLmNuL2NybC9TTTJZU1hTRUNPTkRDQS9TTTJZU1hTRUNPTkRDQS5jcmwwNqA0oDKGMGh0dHA6Ly9jcmwuYmpjYS5vcmcuY24vY3JsL1NNMllTWFNFQ09ORENBLzM5LmNybDAdBgNVHQ4EFgQU0QJacuo0kf3AefUFL1MwCGokHDswHwYDVR0jBBgwFoAU3fpmjDn5YMWtKZSC4Jmnfn5aOu4wPQYDVR0gBDYwNDAyBgkqgRyG7zICAgMwJTAjBggrBgEFBQcCARYXaHR0cHM6Ly93d3cuYmpjYS5jbi9DUFMwFgYKKoEchu8yAgEJAQQITVRJek5EVTIwDAYIKoEcz1UBg3UFAANIADBFAiAtJs26h6bqo13tbSNOgx7Q8qG1wujZzxDbg53pxWv80gIhAPgVqP4G73jLXM1fmMPepRQH1fz5MEnpolCS5EJmVq28\n-----END CERTIFICATE-----"
+	signValue := "MEUCIGas+thrYsSvxX8HiKIxllHXuqppE3wjGNds+6yLT0aaAiEAkd+g96CcXcsd97MONTouwopnqBFHny+F/NZB6hy/ZW4="
+	hash := "9uJ6XZG5BGAwr8yj2HBBgmmGZFlHE3P/4NYklUm20EQ="
+	raw_signValue, _ := base64.StdEncoding.DecodeString(signValue)
+
+	r, s, err := sm2.SignDataToSignDigit(raw_signValue)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if cert, err := ReadCertificateFromPem([]byte(certPem)); err != nil {
+		t.Fatal(err)
+	} else {
+		pubkey := cert.PublicKey
+		raw_hash, _ := base64.StdEncoding.DecodeString(hash)
+		switch key := pubkey.(type) {
+		case *ecdsa.PublicKey:
+			var sm2pubkey sm2.PublicKey
+			sm2pubkey.X = key.X
+			sm2pubkey.Y = key.Y
+			sm2pubkey.Curve = key.Curve
+			if ok := sm2.Verify(&sm2pubkey, raw_hash, r, s); !ok {
+				t.Fatal("verify failed")
+			} else {
+				fmt.Println("verify ok")
+			}
+		}
+	}
+
 }
 
 func TestCreateRevocationList(t *testing.T) {

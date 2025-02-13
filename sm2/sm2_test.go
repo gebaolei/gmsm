@@ -18,6 +18,7 @@ package sm2
 import (
 	"bytes"
 	"crypto/rand"
+	"encoding/base64"
 	"fmt"
 	"io/ioutil"
 	"math/big"
@@ -25,7 +26,65 @@ import (
 	"testing"
 )
 
+func SM2Hex2PublicKey(publicKeyHex string) (*PublicKey, error) {
+	// 检查是否以04开头，如果是则去掉
+	if len(publicKeyHex) < 2 || publicKeyHex[:2] != "04" {
+		return nil, fmt.Errorf("invalid public key format, should start with '04'")
+	}
+	publicKeyHex = publicKeyHex[2:]
+
+	// 将十六进制字符串转换为字节数组
+	publicKeyBytes, err := hexToBytes(publicKeyHex)
+	if err != nil {
+		return nil, err
+	}
+
+	// 分割X和Y坐标
+	if len(publicKeyBytes) != 64 {
+		return nil, fmt.Errorf("invalid public key length")
+	}
+	x := new(big.Int).SetBytes(publicKeyBytes[:32])
+	y := new(big.Int).SetBytes(publicKeyBytes[32:])
+
+	return &PublicKey{Curve: P256Sm2(), X: x, Y: y}, nil
+
+}
+
+// hexToBytes 将十六进制字符串转换为字节数组
+func hexToBytes(hexStr string) ([]byte, error) {
+	if len(hexStr)%2 != 0 {
+		return nil, fmt.Errorf("invalid hex string length")
+	}
+	bytes := make([]byte, len(hexStr)/2)
+	for i := 0; i < len(hexStr); i += 2 {
+		_, err := fmt.Sscanf(hexStr[i:i+2], "%02x", &bytes[i/2])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return bytes, nil
+}
+
+func TestSm2Verify(t *testing.T) {
+	key := "04309af501e88807a3426f60901b50e3eed0f3485d0c5d505567ecf17e2310282cc22d3d657321b09a7baefa31119f8f17b54a0b65f78d231b07a317ec83d509ae"
+	sign := "30450220402bd3e2d9209f8f0d32bc87bd8f451dfa05ea57a15a5ad792e4ecf5f82637ab022100c0e871017b894edd57f545de6ea626625018453500d9beb0fb552ec85d483c7c"
+	signedData := "MTIzNCwxMjM0LDEyMzQ="
+	if pubkey, err := SM2Hex2PublicKey(key); err != nil {
+		t.Fatal(err)
+	} else {
+		if signture, err := hexToBytes(sign); err == nil {
+			ok := pubkey.Verify([]byte(signedData), signture)
+			if ok != true {
+				fmt.Printf("Verify error\n")
+			} else {
+				fmt.Printf("Verify ok\n")
+			}
+		}
+	}
+}
+
 func TestSm2(t *testing.T) {
+	hash := "9uJ6XZG5BGAwr8yj2HBBgmmGZFlHE3P/4NYklUm20EQ="
 	priv, err := GenerateKey(rand.Reader) // 生成密钥对
 	fmt.Println(priv)
 	if err != nil {
@@ -61,7 +120,16 @@ func TestSm2(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-
+	fmt.Printf("sign1:" + base64.StdEncoding.EncodeToString(sign) + "\n")
+	r, s, err := SignDataToSignDigit(sign)
+	if err != nil {
+		t.Fatal(err)
+	}
+	sign2, err := SignDigitToSignData(r, s)
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println("sign2:" + base64.StdEncoding.EncodeToString(sign2) + "\n")
 	err = ioutil.WriteFile("TestResult", sign, os.FileMode(0644))
 	if err != nil {
 		t.Fatal(err)
@@ -79,6 +147,19 @@ func TestSm2(t *testing.T) {
 		fmt.Printf("Verify error\n")
 	} else {
 		fmt.Printf("Verify ok\n")
+	}
+
+	// 哈希签名&验签
+	digest, _ := base64.StdEncoding.DecodeString(hash)
+	r, s, err = Sign(priv, digest, rand.Reader)
+	if err != nil {
+		t.Fatal(err)
+	}
+	ok = Verify(&priv.PublicKey, digest, r, s)
+	if !ok {
+		fmt.Printf("digent verify error\n")
+	} else {
+		fmt.Printf("digest verify ok\n")
 	}
 
 }

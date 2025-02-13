@@ -45,10 +45,16 @@ type sm2Signature struct {
 	R, S *big.Int
 }
 
+/**
+* 将 big.Int的签名结果转换成Asn1的常见输出格式
+**/
 func SignDigitToSignData(r, s *big.Int) ([]byte, error) {
 	return asn1.Marshal(sm2Signature{r, s})
 }
 
+/**
+* 将 Asn1的常见签名结果转换成big.Int输出格式
+**/
 func SignDataToSignDigit(sign []byte) (*big.Int, *big.Int, error) {
 	var sm2Sign sm2Signature
 

@@ -82,6 +82,7 @@ var (
 	OIDSignatureSM2WithSM3    = asn1.ObjectIdentifier{1, 2, 156, 10197, 1, 501}
 	OIDSignatureSM2WithSHA1   = asn1.ObjectIdentifier{1, 2, 156, 10197, 1, 502}
 	OIDSignatureSM2WithSHA256 = asn1.ObjectIdentifier{1, 2, 156, 10197, 1, 503}
+	OIDSignatureSM2           = asn1.ObjectIdentifier{1, 2, 156, 10197, 1, 301}
 	OIDSignatureDigestSM2     = asn1.ObjectIdentifier{1, 2, 156, 10197, 1, 301, 1}
 	OIDSignatureKeySM2        = asn1.ObjectIdentifier{1, 2, 156, 10197, 1, 301, 3}
 
