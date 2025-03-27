@@ -28,13 +28,13 @@ func ReadPrivateKeyFromPem(privateKeyPem []byte, pwd []byte) (*sm2.PrivateKey, e
 /*
  * parse -----BEGIN EC PRIVATE KEY----- prefix pem key to sm2.PrivateKey
  */
-func ReadECSm2PrivateKeyFromPem(privateKeyPem []byte, pwd []byte) (*sm2.PrivateKey, error) {
+func ReadECSm2PrivateKeyFromPem(privateKeyPem []byte) (*sm2.PrivateKey, error) {
 	var block *pem.Block
 	block, _ = pem.Decode(privateKeyPem)
 	if block == nil {
 		return nil, errors.New("failed to decode private key")
 	}
-	priv, err := ParsePKCS8PrivateKey(block.Bytes, pwd)
+	priv, err := ParseSm2PrivateKey(block.Bytes)
 	return priv, err
 }
 
