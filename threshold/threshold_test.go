@@ -66,13 +66,13 @@ func TestXietong(t *testing.T) {
 	pk2_str, _ := x509.WritePrivateKeyToPem(pk2, nil)
 	fmt.Println("pk2: ", string(pk2_str))
 
-	// 到处服务端部分公钥，交给客户端 （客户端也应该要到处自己的部分私钥，交给服务端）
+	// 导出服务端部分公钥，交给客户端 （客户端也应该要到处自己的部分私钥，交给服务端）
 	pubk2, err := DerivePartialPublicKey(pk2)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	//客户端计算最终的公钥，(服务端可以使用pk2， pubk1也会生成最终公钥， 两方的公钥都是一样的（代码省略了）)
+	// 客户端计算最终的公钥，(服务端可以使用pk2， pubk1也会生成最终公钥， 两方的最终公钥都是一样的（代码省略了）)
 	complate_pubk, err := DeriveCompletePublicKey(pk1, pubk2)
 	if err != nil {
 		t.Fatal(err)
