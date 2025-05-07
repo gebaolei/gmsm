@@ -733,3 +733,13 @@ func TestCreateRevocationList(t *testing.T) {
 		})
 	}
 }
+
+func TestHexPrivateKey(t *testing.T) {
+	for i := 0; i < 500; i++ {
+		priv, _ := sm2.GenerateKey(rand.Reader) // 生成密钥对
+		hex := WritePrivateKeyToHex(priv)
+		if _, err := ReadPrivateKeyFromHex(hex); err != nil {
+			t.Fatal(err.Error())
+		}
+	}
+}

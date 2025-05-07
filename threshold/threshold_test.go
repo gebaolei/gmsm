@@ -29,6 +29,7 @@ qGbi0lEb
 	fmt.Println(string(pubk_str))
 	pubk_hex := x509.WritePublicKeyToHex(pubk)
 	fmt.Println(pubk_hex)
+	// fmt.Println(x509.WritePublicKeyToHex(pubk))
 
 	pubk2_str := `0428f6baad64e1d350fde5871bd335363347537cab6e4353bd19e679f4605c225c0d2d4e8497e2611532b6c696901a42ec79886de052721245b5a016ae132d3b21`
 	pubk2, err := x509.ReadPublicKeyFromHex(pubk2_str)

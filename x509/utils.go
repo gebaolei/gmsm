@@ -102,7 +102,12 @@ func ReadPrivateKeyFromHex(Dhex string) (*sm2.PrivateKey, error) {
 }
 
 func WritePrivateKeyToHex(key *sm2.PrivateKey) string {
-	return key.D.Text(16)
+	hexStr := key.D.Text(16)
+	// 保证输出长度为偶数
+	if len(hexStr)%2 != 0 {
+		hexStr = "0" + hexStr
+	}
+	return hexStr
 }
 
 func ReadPublicKeyFromHex(Qhex string) (*sm2.PublicKey, error) {
