@@ -11,6 +11,7 @@ import (
 	"encoding/pem"
 	"errors"
 	"math/big"
+	"strings"
 
 	"github.com/gebaolei/gmsm/sm2"
 )
@@ -82,8 +83,16 @@ func WritePublicKeyToPem(key *sm2.PublicKey) ([]byte, error) {
 
 // DHex是sm2私钥的真正关键数值
 func ReadPrivateKeyFromHex(Dhex string) (*sm2.PrivateKey, error) {
+	// 清理输入字符串
+	cleaned := strings.TrimPrefix(strings.TrimSpace(Dhex), "0x")
+
+	// 确保长度为偶数
+	if len(cleaned)%2 != 0 {
+		cleaned = "0" + cleaned
+	}
+
 	c := sm2.P256Sm2()
-	d, err := hex.DecodeString(Dhex)
+	d, err := hex.DecodeString(cleaned)
 	if err != nil {
 		return nil, err
 	}
