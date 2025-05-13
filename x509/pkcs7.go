@@ -108,6 +108,19 @@ type signerInfo struct {
 	UnauthenticatedAttributes []attribute `asn1:"optional,tag:1"`
 }
 
+func (si *signerInfo) SetUnauthenticatedAttributes(extraUnsignedAttrs []Attribute) error {
+	unsignedAttrs := &attributes{}
+	for _, attr := range extraUnsignedAttrs {
+		unsignedAttrs.Add(attr.Type, attr.Value)
+	}
+	finalUnsignedAttrs, err := unsignedAttrs.ForMarshalling()
+	if err != nil {
+		return err
+	}
+	si.UnauthenticatedAttributes = finalUnsignedAttrs
+	return nil
+}
+
 // ParsePKCS7 decodes a DER encoded PKCS7.
 func ParsePKCS7(data []byte) (p7 *PKCS7, err error) {
 	if len(data) == 0 {
